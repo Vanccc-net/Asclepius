@@ -8,3 +8,5 @@
 /Asclepius.Auth.Data/obj/
 /Asclepius.Auth.Domain/bin/
 /Asclepius.Auth.Domain/obj/
+.idea/
+.DS_Store
