@@ -21,17 +21,17 @@ public class RegisterUserCommandHandler(
 {
     public async Task<JwtResponse> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
+        
+        if (await userRepo.EmailExistAsync(request.Email, cancellationToken))
+            throw new UserAlreadyExistsException("User with this email already exists");
+        
         await unitOfWork.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            if (await userRepo.EmailExistAsync(request.Email, cancellationToken))
-                throw new UserAlreadyExistsException("User with this email already exists");
-
             var user = User.Create(request.Email, request.Password, request.FirstName, request.LastName);
             userRepo.Add(user);
-            var refreshToken = await refreshTokenRepo.Create(user.Id, cancellationToken);
-
+            
             var profile = new Profile(user.Id, request.DateOfBirth, request.Gender, BloodType.AbNegative);
 
             await publishEndpoint.Publish(profile, cancellationToken);
@@ -39,8 +39,10 @@ public class RegisterUserCommandHandler(
                 $"Добро пожаловать, {user.LastName}!"), cancellationToken);
 
             await unitOfWork.CommitTransactionAsync(cancellationToken);
+            await userRepo.MarkEmailAsExistsAsync(request.Email, cancellationToken);
             logger.LogInformation("Успешная регистрация {UserId}", user.Id);
             var accessToken = jwtGenerator.GenerateJwtToken(user);
+            var refreshToken = await refreshTokenRepo.Create(user.Id, cancellationToken);
             return new JwtResponse(accessToken, refreshToken.Value);
         }
         catch

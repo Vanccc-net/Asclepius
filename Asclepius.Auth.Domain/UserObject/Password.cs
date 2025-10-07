@@ -14,7 +14,8 @@ public record Password
 
         if (string.IsNullOrWhiteSpace(password) || password.Length < 8)
             throw new InvalidPasswordException("Password must be at least 8 characters");
-        Hash = BCrypt.Net.BCrypt.EnhancedHashPassword(password);
+        //TODO: подключить worker для хэширования паролей, чтобы увеличть RPS
+        Hash = password; //= BCrypt.Net.BCrypt.EnhancedHashPassword(password);
     }
 
     [Obsolete]

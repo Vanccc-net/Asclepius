@@ -11,8 +11,12 @@ public static class DataExtensions
     public static IServiceCollection AddDataServices(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("Postgres") ?? throw new InvalidOperationException();
-        services.AddDbContextPool<ApplicationContext>(op
-            => op.UseNpgsql(connectionString, b => b.MigrationsAssembly("Asclepius.Auth.Api")));
+        services.AddDbContextPool<ApplicationContext>(op =>
+        {
+            op.UseNpgsql(connectionString, b => b.MigrationsAssembly("Asclepius.Auth.Api"));
+            // op.EnableSensitiveDataLogging();
+            // op.LogTo(Console.WriteLine, LogLevel.Information);
+        });
         
         services.AddScoped<IUser, UserRepo>();
         services.AddScoped<IRole, RoleRepo>();

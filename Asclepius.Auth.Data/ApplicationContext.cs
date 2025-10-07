@@ -10,7 +10,7 @@ public sealed class ApplicationContext : DbContext
     public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
     {
         //Сделал, чтобы не нужно было создавать миграции для оценки проекта
-        Database.EnsureCreated();
+        // Database.EnsureCreated();
     }
 
     public DbSet<User> Users { get; set; } = null!;

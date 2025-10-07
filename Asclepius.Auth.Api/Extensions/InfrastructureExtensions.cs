@@ -28,7 +28,10 @@ public static class InfrastructureExtensions
                 o.UseBusOutbox();
 
                 o.DuplicateDetectionWindow = TimeSpan.FromSeconds(30);
-                o.QueryDelay = TimeSpan.FromSeconds(1);
+                
+                o.QueryDelay = TimeSpan.FromSeconds(30);
+                o.QueryTimeout = TimeSpan.FromSeconds(5); 
+                o.QueryMessageLimit = 20;
             });
 
             x.UsingRabbitMq((context, cfg) =>
