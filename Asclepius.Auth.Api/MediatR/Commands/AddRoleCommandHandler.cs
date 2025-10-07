@@ -1,4 +1,5 @@
 using Asclepius.Auth.Business;
+using Asclepius.Auth.Data.Exceptions;
 using Asclepius.Auth.Domain.Interfaces;
 using Asclepius.DTO.Auth;
 using MediatR;
@@ -22,12 +23,12 @@ public class AddRoleCommandHandler(
             var user = await userRepo.GetByIdAsync(request.UserId, cancellationToken);
 
             if (user == null)
-                throw new InvalidOperationException($"User with id {request.UserId} not found");
+                throw new UserNotFoundException($"User with id {request.UserId} not found");
 
             var role = await roleRepo.GetByIdAsync(request.RoleId, cancellationToken);
 
             if (role == null)
-                throw new InvalidOperationException($"Role with id {request.RoleId} not found");
+                throw new RoleNotFoundException($"Role with id {request.RoleId} not found");
 
             user.AddRole(role);
 
@@ -42,9 +43,8 @@ public class AddRoleCommandHandler(
 
             return new JwtResponse(accessToken, refreshToken.Value);
         }
-        catch (Exception ex)
+        catch
         {
-            logger.LogError(ex, ex.Message);
             await unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }

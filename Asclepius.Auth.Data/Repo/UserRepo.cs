@@ -9,9 +9,9 @@ public class UserRepo(ApplicationContext context) : IUser
 {
     public async Task<User?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
-        var query = from user in context.Users
+        var query = (from user in context.Users
             where user.Id == id
-            select user;
+            select user).AsNoTracking();
 
         return await query.FirstOrDefaultAsync(cancellationToken);
     }
@@ -35,9 +35,9 @@ public class UserRepo(ApplicationContext context) : IUser
     {
         var emailRecord = new Email(email);
 
-        var query = from user in context.Users
+        var query = (from user in context.Users
             where user.Email == emailRecord
-            select user;
+            select user).AsNoTracking();
 
         return await query.FirstOrDefaultAsync(cancellationToken);
     }
@@ -48,7 +48,7 @@ public class UserRepo(ApplicationContext context) : IUser
 
         var query = (from user in context.Users
             where user.Email == emailRecord
-            select user).Include(user => user.Roles);
+            select user).Include(user => user.Roles).AsNoTracking();
 
         return await query.FirstOrDefaultAsync(cancellationToken);
     }

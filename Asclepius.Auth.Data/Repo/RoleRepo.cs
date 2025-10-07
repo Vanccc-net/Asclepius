@@ -8,9 +8,9 @@ public class RoleRepo(ApplicationContext context) : IRole
 {
     public async Task<Role?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
-        var query = from role in context.Roles
+        var query = (from role in context.Roles
             where role.Id == id
-            select role;
+            select role).AsNoTracking();
         return await query.FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -31,6 +31,6 @@ public class RoleRepo(ApplicationContext context) : IRole
 
     public async Task<IEnumerable<Role>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await context.Roles.ToListAsync(cancellationToken);
+        return await context.Roles.AsNoTracking().ToListAsync(cancellationToken);
     }
 }

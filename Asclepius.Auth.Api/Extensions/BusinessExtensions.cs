@@ -8,8 +8,7 @@ public static class BusinessExtensions
 
     public static IServiceCollection AddBusiness(this IServiceCollection services)
     {
-        services.AddScoped<IPasswordHasher, PasswordHasher>();
-        services.AddScoped<JwtGenerator>();
+        services.AddSingleton<JwtGenerator>();
         
         return services;
     }
