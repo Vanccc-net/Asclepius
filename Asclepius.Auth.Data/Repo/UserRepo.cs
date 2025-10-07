@@ -78,6 +78,6 @@ public class UserRepo(ApplicationContext context, IConnectionMultiplexer redis) 
     public async Task MarkEmailAsExistsAsync(string email, CancellationToken cancellationToken)
     {
         var expiry = TimeSpan.FromDays(30);
-        await _redis.StringSetAsync($"email_exist_{email}", email, expiry).ConfigureAwait(false);
+        await _redis.StringSetAsync($"email_exist_{email}", "1", expiry).ConfigureAwait(false);
     }
 }

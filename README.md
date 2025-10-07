@@ -25,6 +25,72 @@
 | **CI/CD** | Docker / Docker Compose | Контейнеризация и оркестрация |
 | **Мониторинг** | Prometheus, Grafana, Serilog | Сбор метрик, визуализация и структурированное логирование |
 
+## Highload возможности
+Проект оптимизирован под высокие нагрузки. Я проводил нагрузочное тестирование с помощью k6
+
+| Параметр | Значение                       |
+| :--- |:-------------------------------|
+| **Virtual Users** | 5,000 concurrent users         |
+| **Длительность** | 2 минуты 50 секунд             |
+| **Цель теста** | Регистрация нового пользователя |
+| **Всего запросов** | 1,332,672                      |
+| **RPS** | 7,839                          |
+| **Ошибок** | 0%                             |
+| **Время обработки для 95%** | 642ms |
+
+### Сценарий теста:
+```javascript
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+
+export const options = {
+  stages: [
+    { duration: '30s', target: 200 }, // Ramp-up: 30 сек до 200 VUs
+    { duration: '30s', target: 350 }, // Ramp-up: 30 сек до 350 VUs
+    { duration: '30s', target: 500 }, // Stress: 30 сек до 500 VUs
+    { duration: '10s', target: 2000 }, // Stress: 10 сек до 2000 VUs
+    { duration: '1m', target: 5000 }, // Stress: 1 м до 5000 VUs
+    { duration: '10s', target: 0 },
+
+  ],
+  thresholds: {
+    // 95% запросов должны завершаться быстрее 1000мс
+    http_req_duration: ['p(95) < 1000'],
+    // Менее 1% запросов могут завершиться ошибкой
+    http_req_failed: ['rate < 0.01'],
+  },
+};
+
+export default function () {
+  const url = 'http://localhost:8080/api/auth/Register/false';
+  
+  const payload = JSON.stringify({
+    email: `testuser_${__VU}_${__ITER}_${Math.random()}@example.com`, 
+    password: 'stringstringstringstring',
+    firstName: 'Test',
+    lastName: 'User',
+    dateOfBirth: '2025-10-04',
+    gender: 0
+  });
+
+  const params = {
+    headers: {
+      'accept': '*/*',
+      'Content-Type': 'application/json',
+    },
+  };
+
+  const response = http.post(url, payload, params);
+
+  // Проверяем статус ответа
+  check(response, {
+    'status is 200': (r) => r.status === 200,
+    'response time < 1000ms': (r) => r.timings.duration < 1000,
+  });
+}
+```
+
+
 ##  Как запустить проект
 
 Проект полностью контейнеризован и запускается одной командой с помощью Docker Compose.
